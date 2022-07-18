@@ -1,5 +1,6 @@
 import sys
 import os
+import ast
 
 import Ui_annotation
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox, QWidget
@@ -84,7 +85,7 @@ class MainDialog(QWidget):
         self.source_spans = [[]]
         self.source_word_spans = [[]]
         self.target_spans = [[]]
-        self.target_word_spans = [[]]
+        # self.target_word_spans = [[]]
         self.dialogue_id = []
         self.turn_id = []
         self.utterance_type = []
@@ -94,7 +95,7 @@ class MainDialog(QWidget):
         global output # global variable
         output = pd.DataFrame(columns=['source', 'target', 'source_entity', 'target_entity', \
                             'source_span', 'target_span', 'dialogue_id', 'turn_id', 'utterance_type', \
-                            'source_word_span', 'target_word_span'])
+                            'source_word_span'])
         self.write_output = WorkThread()
         
         # choose file
@@ -163,8 +164,10 @@ class MainDialog(QWidget):
                 tmp_target_text = item['target'] if str(item['target']) != 'nan' else ''
                 self.target_texts.append(tmp_target_text)
                 if i == 0:
-                    self.source_entities[0] = json.loads(item['source_entity'].replace("'", '"'))
-                    self.target_entities[0] = json.loads(item['target_entity'].replace("'", '"'))
+                    # self.source_entities[0] = json.loads(item['source_entity'].replace("'", '"'))
+                    # self.target_entities[0] = json.loads(item['target_entity'].replace("'", '"'))
+                    self.source_entities[0] = ast.literal_eval(item['source_entity'])
+                    self.target_entities[0] = ast.literal_eval(item['target_entity'])
                     self.source_spans[0] = json.loads(item['source_span'])
                     self.target_spans[0] = json.loads(item['target_span'])
                     for span_i in range(len(self.source_spans[0])):
@@ -173,36 +176,38 @@ class MainDialog(QWidget):
                                     self.source_entities[0][span_i], self.source_texts[0], source_span[0], source_span[1])
                         assert result == True
                         self.source_word_spans[0].append([word_start_idx, word_end_idx])
-                    for span_i in range(len(self.target_spans[0])):
-                        target_span = self.target_spans[0][span_i]
-                        result, word_start_idx, word_end_idx, char_start_idx, char_end_idx = selectedText_is_consecutive_words(
-                                    self.target_entities[0][span_i], self.target_texts[0], target_span[0], target_span[1])
-                        assert result == True
-                        self.target_word_spans[0].append([word_start_idx, word_end_idx])
+                    # for span_i in range(len(self.target_spans[0])):
+                    #     target_span = self.target_spans[0][span_i]
+                    #     result, word_start_idx, word_end_idx, char_start_idx, char_end_idx = selectedText_is_consecutive_words(
+                    #                 self.target_entities[0][span_i], self.target_texts[0], target_span[0], target_span[1])
+                    #     assert result == True
+                    #     self.target_word_spans[0].append([word_start_idx, word_end_idx])
                 else:
-                    self.source_entities.append(json.loads(item['source_entity'].replace("'", '"')))
-                    self.target_entities.append(json.loads(item['target_entity'].replace("'", '"')))
+                    # self.source_entities.append(json.loads(item['source_entity'].replace("'", '"')))
+                    # self.target_entities.append(json.loads(item['target_entity'].replace("'", '"')))
+                    self.source_entities.append(ast.literal_eval(item['source_entity']))
+                    self.target_entities.append(ast.literal_eval(item['target_entity']))
                     self.source_spans.append(json.loads(item['source_span']))
                     self.target_spans.append(json.loads(item['target_span']))
                     self.source_word_spans.append([])
-                    self.target_word_spans.append([])
+                    # self.target_word_spans.append([])
                     for span_i in range(len(self.source_spans[i])):
                         source_span = self.source_spans[i][span_i]
                         result, word_start_idx, word_end_idx, char_start_idx, char_end_idx = selectedText_is_consecutive_words(
                                     self.source_entities[i][span_i], self.source_texts[i], source_span[0], source_span[1])
                         assert result == True
                         self.source_word_spans[i].append([word_start_idx, word_end_idx])
-                    for span_i in range(len(self.target_spans[i])):
-                        target_span = self.target_spans[i][span_i]
-                        result, word_start_idx, word_end_idx, char_start_idx, char_end_idx = selectedText_is_consecutive_words(
-                                    self.target_entities[i][span_i], self.target_texts[i], target_span[0], target_span[1])
-                        assert result == True
-                        self.target_word_spans[i].append([word_start_idx, word_end_idx])
+                    # for span_i in range(len(self.target_spans[i])):
+                    #     target_span = self.target_spans[i][span_i]
+                    #     result, word_start_idx, word_end_idx, char_start_idx, char_end_idx = selectedText_is_consecutive_words(
+                    #                 self.target_entities[i][span_i], self.target_texts[i], target_span[0], target_span[1])
+                    #     assert result == True
+                    #     self.target_word_spans[i].append([word_start_idx, word_end_idx])
                 output.loc[self.cur_index] = [self.source_texts[self.cur_index], self.target_texts[self.cur_index], \
                             self.source_entities[self.cur_index], self.target_entities[self.cur_index], \
                             self.source_spans[self.cur_index], self.target_spans[self.cur_index], \
                             self.dialogue_id[self.cur_index], self.turn_id[self.cur_index], self.utterance_type[self.cur_index], \
-                            self.source_word_spans[self.cur_index], self.target_word_spans[self.cur_index]
+                            self.source_word_spans[self.cur_index]
                             ]
                 self.cur_index += 1
             # 预添加空列表
@@ -211,7 +216,7 @@ class MainDialog(QWidget):
             self.source_spans.append([])
             self.source_word_spans.append([])
             self.target_spans.append([])
-            self.target_word_spans.append([])
+            # self.target_word_spans.append([])
             # 显示标注文件的最后一条
             tmp_index = self.cur_index - 1
             self.cur_index = self.cur_index-1
@@ -221,11 +226,13 @@ class MainDialog(QWidget):
             self.ui.target.setText(self.target_texts[tmp_index])
             display_source_text = ""
             for i in range(len(self.source_entities[tmp_index])):
-                display_source_text += self.source_entities[tmp_index][i] + '  -  ' + str(self.source_word_spans[tmp_index][i]) + '\n'
+                # display_source_text += self.source_entities[tmp_index][i] + '  -  ' + str(self.source_word_spans[tmp_index][i]) + '\n'
+                display_source_text += self.source_entities[tmp_index][i] + '  -  ' + str(self.source_spans[tmp_index][i]) + '\n'
             self.ui.source_entity.setText(display_source_text)
             display_target_text = ""
             for i in range(len(self.target_entities[tmp_index])):
-                display_target_text += self.target_entities[tmp_index][i] + '  -  ' + str(self.target_word_spans[tmp_index][i]) + '\n'
+                # display_target_text += self.target_entities[tmp_index][i] + '  -  ' + str(self.target_word_spans[tmp_index][i]) + '\n'
+                display_target_text += self.target_entities[tmp_index][i] + '  -  ' + str(self.target_spans[tmp_index][i]) + '\n'
             self.ui.target_entity.setText(display_target_text)
             self.ui.id.setText(str(tmp_index+1)+' / '+str(len(self.source_texts)))
         else:
@@ -295,7 +302,8 @@ class MainDialog(QWidget):
                     self.source_word_spans[self.cur_index].append([word_start_idx, word_end_idx])
                     display_text = ""
                     for i in range(len(self.source_entities[self.cur_index])):
-                        display_text += self.source_entities[self.cur_index][i] + '  -  ' + str(self.source_word_spans[self.cur_index][i]) + '\n'
+                        # display_text += self.source_entities[self.cur_index][i] + '  -  ' + str(self.source_word_spans[self.cur_index][i]) + '\n'
+                        display_text += self.source_entities[self.cur_index][i] + '  -  ' + str(self.source_spans[self.cur_index][i]) + '\n'
                     self.ui.source_entity.setText(display_text)
                 else:
                     self.box5.show()
@@ -306,21 +314,23 @@ class MainDialog(QWidget):
         if len(self.target_entities[self.cur_index]) == len(self.source_entities[self.cur_index])-1:
             tc = self.ui.target.textCursor()
             if tc.selectedText() != '':
-                result, word_start_idx, word_end_idx, char_start_idx, char_end_idx = selectedText_is_consecutive_words(tc.selectedText(), 
-                                                    self.ui.target.toPlainText(), tc.selectionStart(), tc.selectionEnd())
-                if result:
-                    color_format = QTextCharFormat(tc.charFormat())
-                    color_format.setForeground(Qt.red)
-                    tc.mergeCharFormat(color_format)
-                    self.target_entities[self.cur_index].append(tc.selectedText())
-                    self.target_spans[self.cur_index].append([char_start_idx, char_end_idx])
-                    self.target_word_spans[self.cur_index].append([word_start_idx, word_end_idx])
-                    display_text = ""
-                    for i in range(len(self.target_entities[self.cur_index])):
-                        display_text += self.target_entities[self.cur_index][i] + '  -  ' + str(self.target_word_spans[self.cur_index][i]) + '\n'
-                    self.ui.target_entity.setText(display_text)
-                else:
-                    self.box5.show()
+                # result, word_start_idx, word_end_idx, char_start_idx, char_end_idx = selectedText_is_consecutive_words(tc.selectedText(), 
+                #                                     self.ui.target.toPlainText(), tc.selectionStart(), tc.selectionEnd())
+                # if result:
+                color_format = QTextCharFormat(tc.charFormat())
+                color_format.setForeground(Qt.red)
+                tc.mergeCharFormat(color_format)
+                self.target_entities[self.cur_index].append(tc.selectedText())
+                # self.target_spans[self.cur_index].append([char_start_idx, char_end_idx])
+                self.target_spans[self.cur_index].append([tc.selectionStart(), tc.selectionEnd()])
+                # self.target_word_spans[self.cur_index].append([word_start_idx, word_end_idx])
+                display_text = ""
+                for i in range(len(self.target_entities[self.cur_index])):
+                    # display_text += self.target_entities[self.cur_index][i] + '  -  ' + str(self.target_word_spans[self.cur_index][i]) + '\n'
+                    display_text += self.target_entities[self.cur_index][i] + '  -  ' + str(self.target_spans[self.cur_index][i]) + '\n'
+                self.ui.target_entity.setText(display_text)
+                # else:
+                #     self.box5.show()
         else:
             self.box3.show()
 
@@ -331,7 +341,7 @@ class MainDialog(QWidget):
             self.source_spans[self.cur_index] = []
             self.source_word_spans[self.cur_index] = []
             self.target_spans[self.cur_index] = []
-            self.target_word_spans[self.cur_index] = []
+            # self.target_word_spans[self.cur_index] = []
             self.ui.source.setTextColor(Qt.black)
             self.ui.target.setTextColor(Qt.black)
             tmp_source_text = self.source_texts[self.cur_index]
@@ -364,14 +374,14 @@ class MainDialog(QWidget):
                             self.source_entities[self.cur_index], self.target_entities[self.cur_index], \
                             self.source_spans[self.cur_index], self.target_spans[self.cur_index], \
                             self.dialogue_id[self.cur_index], self.turn_id[self.cur_index], self.utterance_type[self.cur_index], \
-                            self.source_word_spans[self.cur_index], self.target_word_spans[self.cur_index]
+                            self.source_word_spans[self.cur_index]
                             ]
             else:
                 output.loc[self.cur_index] = [self.source_texts[self.cur_index], self.target_texts[self.cur_index], \
                             [], [], \
                             [], [], \
                             self.dialogue_id[self.cur_index], self.turn_id[self.cur_index], self.utterance_type[self.cur_index], \
-                            [], []
+                            []
                             ]
 
             self.write_output.start()
@@ -389,11 +399,13 @@ class MainDialog(QWidget):
             self.ui.target.setText(old_data['target'])
             display_source_text = ""
             for i in range(len(old_data['source_entity'])):
-                display_source_text += old_data['source_entity'][i] + '  -  ' + str(old_data['source_word_span'][i]) + '\n'
+                # display_source_text += old_data['source_entity'][i] + '  -  ' + str(old_data['source_word_span'][i]) + '\n'
+                display_source_text += old_data['source_entity'][i] + '  -  ' + str(old_data['source_span'][i]) + '\n'
             self.ui.source_entity.setText(display_source_text)
             display_target_text = ""
             for i in range(len(old_data['target_entity'])):
-                display_target_text += old_data['target_entity'][i] + '  -  ' + str(old_data['target_word_span'][i]) + '\n'
+                # display_target_text += old_data['target_entity'][i] + '  -  ' + str(old_data['target_word_span'][i]) + '\n'
+                display_target_text += old_data['target_entity'][i] + '  -  ' + str(old_data['target_span'][i]) + '\n'
             self.ui.target_entity.setText(display_target_text)
     
     def reset_item(self):
@@ -411,7 +423,7 @@ class MainDialog(QWidget):
         self.source_spans[self.cur_index] = []
         self.source_word_spans[self.cur_index] = []
         self.target_spans[self.cur_index] = []
-        self.target_word_spans[self.cur_index] = []
+        # self.target_word_spans[self.cur_index] = []
 
     def next_item(self):
         if not self.cur_index < len(self.source_texts):
@@ -428,14 +440,14 @@ class MainDialog(QWidget):
                             self.source_entities[self.cur_index], self.target_entities[self.cur_index], \
                             self.source_spans[self.cur_index], self.target_spans[self.cur_index], \
                             self.dialogue_id[self.cur_index], self.turn_id[self.cur_index], self.utterance_type[self.cur_index], \
-                            self.source_word_spans[self.cur_index], self.target_word_spans[self.cur_index]
+                            self.source_word_spans[self.cur_index]
                             ]
             else:
                 output.loc[self.cur_index] = [self.source_texts[self.cur_index], self.target_texts[self.cur_index], \
                             [], [], \
                             [], [], \
                             self.dialogue_id[self.cur_index], self.turn_id[self.cur_index], self.utterance_type[self.cur_index], \
-                            [], []
+                            []
                             ]
             self.write_output.start()
 
@@ -457,11 +469,13 @@ class MainDialog(QWidget):
                     self.ui.target.setText(old_data['target'])
                     display_source_text = ""
                     for i in range(len(old_data['source_entity'])):
-                        display_source_text += old_data['source_entity'][i] + '  -  ' + str(old_data['source_word_span'][i]) + '\n'
+                        # display_source_text += old_data['source_entity'][i] + '  -  ' + str(old_data['source_word_span'][i]) + '\n'
+                        display_source_text += old_data['source_entity'][i] + '  -  ' + str(old_data['source_span'][i]) + '\n'
                     self.ui.source_entity.setText(display_source_text)
                     display_target_text = ""
                     for i in range(len(old_data['target_entity'])):
-                        display_target_text += old_data['target_entity'][i] + '  -  ' + str(old_data['target_word_span'][i]) + '\n'
+                        # display_target_text += old_data['target_entity'][i] + '  -  ' + str(old_data['target_word_span'][i]) + '\n'
+                        display_target_text += old_data['target_entity'][i] + '  -  ' + str(old_data['target_span'][i]) + '\n'
                     self.ui.target_entity.setText(display_target_text)
                 else:
                     self.ui.source.setTextColor(Qt.black)
@@ -478,7 +492,7 @@ class MainDialog(QWidget):
                     self.source_spans.append([])
                     self.source_word_spans.append([])
                     self.target_spans.append([])
-                    self.target_word_spans.append([])
+                    # self.target_word_spans.append([])
 
 
 if __name__ == '__main__':
