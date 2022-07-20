@@ -45,6 +45,16 @@ def selectedText_is_consecutive_words(select_text, origin_text, char_start_idx, 
             return True, i, i+len(select_words), char_start_idx, char_end_idx
     return False, 0, 0, 0, 0
 
+def ignore_space(select_text, char_start_idx, char_end_idx):
+    select_text_2 = select_text.strip()
+    # char idx changed, ignore space
+    if select_text_2 != select_text:
+        left_len = select_text.find(select_text_2)
+        right_len = len(select_text) - left_len - len(select_text_2)
+        char_start_idx = char_start_idx + left_len
+        char_end_idx = char_end_idx - right_len
+    return char_start_idx, char_end_idx
+
 
 def change_word_to_char_highlight(texts, word_highlight):
     char_highlight = []
@@ -289,7 +299,7 @@ class MainDialog(QWidget):
     def add_source_entity(self):
         if len(self.target_entities[self.cur_index]) == len(self.source_entities[self.cur_index]):
             tc = self.ui.source.textCursor()
-            if tc.selectedText() != '':
+            if tc.selectedText().strip() != '':
                 result, word_start_idx, word_end_idx, char_start_idx, char_end_idx = selectedText_is_consecutive_words(tc.selectedText(), 
                                                     self.source_texts[self.cur_index], tc.selectionStart(), tc.selectionEnd())
                 if result:
@@ -297,7 +307,7 @@ class MainDialog(QWidget):
                     color_format = QTextCharFormat(tc.charFormat())
                     color_format.setForeground(Qt.red)
                     tc.mergeCharFormat(color_format)
-                    self.source_entities[self.cur_index].append(tc.selectedText())
+                    self.source_entities[self.cur_index].append(tc.selectedText().strip())
                     self.source_spans[self.cur_index].append([char_start_idx, char_end_idx])
                     self.source_word_spans[self.cur_index].append([word_start_idx, word_end_idx])
                     display_text = ""
@@ -313,16 +323,16 @@ class MainDialog(QWidget):
     def add_target_entity(self):
         if len(self.target_entities[self.cur_index]) == len(self.source_entities[self.cur_index])-1:
             tc = self.ui.target.textCursor()
-            if tc.selectedText() != '':
+            if tc.selectedText().strip() != '':
                 # result, word_start_idx, word_end_idx, char_start_idx, char_end_idx = selectedText_is_consecutive_words(tc.selectedText(), 
                 #                                     self.ui.target.toPlainText(), tc.selectionStart(), tc.selectionEnd())
                 # if result:
+                char_start_idx, char_end_idx = ignore_space(tc.selectedText(), tc.selectionStart(), tc.selectionEnd())
                 color_format = QTextCharFormat(tc.charFormat())
                 color_format.setForeground(Qt.red)
                 tc.mergeCharFormat(color_format)
-                self.target_entities[self.cur_index].append(tc.selectedText())
-                # self.target_spans[self.cur_index].append([char_start_idx, char_end_idx])
-                self.target_spans[self.cur_index].append([tc.selectionStart(), tc.selectionEnd()])
+                self.target_entities[self.cur_index].append(tc.selectedText().strip())
+                self.target_spans[self.cur_index].append([char_start_idx, char_end_idx])
                 # self.target_word_spans[self.cur_index].append([word_start_idx, word_end_idx])
                 display_text = ""
                 for i in range(len(self.target_entities[self.cur_index])):
